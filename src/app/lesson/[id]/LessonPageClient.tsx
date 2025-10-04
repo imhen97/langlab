@@ -197,6 +197,15 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Handle text-to-speech playback
+  const handleTextToSpeech = (text: string, language: 'en' | 'ko') => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = language === 'en' ? 'en-US' : 'ko-KR';
+      speechSynthesis.speak(utterance);
+    }
+  };
+
   // Handle word click from captions
   const handleWordClick = async (
     word: string,
@@ -2144,7 +2153,7 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
                           isPlaying={
                             isPlaying && currentText.includes("cryptocurrency")
                           }
-                          onPlay={handleTTSPlay}
+                          onPlay={handleTextToSpeech}
                           size="md"
                         />
                       </div>
@@ -2190,7 +2199,7 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
                           isPlaying={
                             isPlaying && currentText.includes("암호화폐")
                           }
-                          onPlay={handleTTSPlay}
+                          onPlay={handleTextToSpeech}
                           size="md"
                         />
                       </div>
@@ -2326,7 +2335,7 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
                                   isPlaying={
                                     isPlaying && currentText === vocab.word
                                   }
-                                  onPlay={handleTTSPlay}
+                                  onPlay={handleTextToSpeech}
                                   className="mr-3"
                                 />
                                 <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded">
@@ -2383,7 +2392,7 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
                                   isPlaying={
                                     isPlaying && currentText === vocab.meaning
                                   }
-                                  onPlay={handleTTSPlay}
+                                  onPlay={handleTextToSpeech}
                                 />
                               </div>
                             </div>
@@ -2424,7 +2433,7 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
                                         isPlaying &&
                                         currentText === vocab.example
                                       }
-                                      onPlay={handleTTSPlay}
+                                      onPlay={handleTextToSpeech}
                                     />
                                   </div>
                                 </div>
@@ -2460,7 +2469,7 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
                                       isPlaying &&
                                       currentText === vocab.exampleKo
                                     }
-                                    onPlay={handleTTSPlay}
+                                    onPlay={handleTextToSpeech}
                                     className="ml-2"
                                   />
                                 </div>
@@ -2722,7 +2731,7 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
                                       isPlaying &&
                                       currentText === pattern.expression
                                     }
-                                    onPlay={handleTTSPlay}
+                                    onPlay={handleTextToSpeech}
                                   />
                                 </div>
                                 {completedExercises.has(index) ? (
@@ -2752,7 +2761,7 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
                                         isPlaying &&
                                         currentText === pattern.meaning
                                       }
-                                      onPlay={handleTTSPlay}
+                                      onPlay={handleTextToSpeech}
                                       className="ml-2"
                                     />
                                   </div>
@@ -3236,6 +3245,9 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
                                               ? segment.ko
                                               : `${segment.en} / ${segment.ko}`
                                           }
+                                          language={captionMode === "EN" ? "en" : "ko"}
+                                          isPlaying={false}
+                                          onPlay={handleTextToSpeech}
                                           className="text-gray-400 hover:text-blue-500 text-xs"
                                         />
                                       </div>
@@ -3758,6 +3770,9 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
                                             ? segment.ko
                                             : `${segment.en} / ${segment.ko}`
                                         }
+                                        language={captionMode === "EN" ? "en" : "ko"}
+                                        isPlaying={false}
+                                        onPlay={handleTextToSpeech}
                                         className="text-gray-400 hover:text-blue-500"
                                       />
                                     </div>
