@@ -619,7 +619,7 @@ function generateContentBasedTranscript(videoInfo: any): TranscriptSegment[] {
   // 설명에서 문장들을 추출하여 세그먼트로 변환
   const sentences = description
     .split(/[.!?]+/)
-    .filter((sentence) => sentence.trim().length > 10)
+    .filter((sentence: string) => sentence.trim().length > 10)
     .slice(0, 6); // 최대 6개 문장
 
   let currentTime = 3.0;
