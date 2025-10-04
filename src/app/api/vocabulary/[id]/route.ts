@@ -89,7 +89,7 @@ export async function PUT(
     }
 
     const updatedItem = await prisma.wordbookItem.update({
-      where: { id: params.id },
+      where: { id: id },
       data: validatedData,
       include: {
         lesson: {
