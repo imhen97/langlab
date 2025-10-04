@@ -6,6 +6,8 @@ import {
   cleanTranscript,
   postProcessTranscriptWithLLM,
 } from "@/lib/captions";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 // Types for enhanced vocabulary and phrase extraction
 interface VocabularyItem {
@@ -768,6 +770,11 @@ Return ONLY JSON:
 export async function POST(req: Request) {
   try {
     console.log("🚀 Starting lesson generation API...");
+
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 });
+    }
 
     const { url, level, purpose } = await req.json();
     console.log("📝 Request body:", { url, level, purpose });
