@@ -623,7 +623,7 @@ function generateContentBasedTranscript(videoInfo: any): TranscriptSegment[] {
     .slice(0, 6); // 최대 6개 문장
 
   let currentTime = 3.0;
-  sentences.forEach((sentence, index) => {
+  sentences.forEach((sentence: string, index: number) => {
     const trimmedSentence = sentence.trim();
     if (trimmedSentence) {
       segments.push({
