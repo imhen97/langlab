@@ -307,13 +307,13 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
       // Repeat entire video
       setTimeout(() => {
         youtubePlayerRef.current?.seekTo(0);
-        youtubePlayerRef.current?.play();
+        youtubePlayerRef.current?.playVideo();
       }, 500);
     } else if (repeatMode === "segment" && repeatSegment) {
       // Repeat segment
       setTimeout(() => {
         youtubePlayerRef.current?.seekTo(repeatSegment.start);
-        youtubePlayerRef.current?.play();
+        youtubePlayerRef.current?.playVideo();
       }, 500);
     } else {
       // Normal end behavior
@@ -335,7 +335,7 @@ export default function LessonPageClient({ lesson }: LessonPageClientProps) {
     ) {
       setTimeout(() => {
         youtubePlayerRef.current?.seekTo(repeatSegment.start);
-        youtubePlayerRef.current?.play();
+        youtubePlayerRef.current?.playVideo();
       }, 100);
     }
   };
