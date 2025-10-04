@@ -1,0 +1,218 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      Role     @default(STUDENT)
+  credits   Int      @default(3) // Free credits for video unlock
+  referredBy String? // 추천한 사용자 ID
+  lastLoginAt DateTime? // 마지막 로그인 시간
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  lessons      Lesson[]
+  progress     Progress[]
+  subscription Subscription?
+  wordbook     WordbookItem[]
+  streaks      Streak[]
+  
+  // Referral relations
+  referralRewardsReferrer ReferralReward[] @relation("ReferrerRewards")
+  referralRewardsReferred ReferralReward[] @relation("ReferredRewards")
+  
+  @@map("users")
+}
+
+model Source {
+  id            String     @id @default(cuid())
+  url           String?
+  type          SourceType // YOUTUBE | NEWS | MP3
+  title         String?
+  transcript    String?
+  duration      Int?       // in seconds
+  thumbnail     String?    // thumbnail URL
+  createdAt     DateTime   @default(now())
+  
+  // Relations
+  lessons       Lesson[]
+  
+  @@map("sources")
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  sourceId    String
+  userId      String
+  level       Level
+  purpose     Purpose
+  title       String?  // YouTube video title
+  description String?  // YouTube video description
+  thumbnail   String?  // YouTube video thumbnail URL
+  duration    Int?     // video duration in seconds
+  summary     Json     // {kr: string, en: string}
+  vocab       Json     // array of vocabulary items
+  patterns    Json     // array of pattern/chunk items
+  script      Json     // transcript with timestamps
+  quizzes     Json     // array of quiz items
+  speaking    Json     // array of speaking cards
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  source      Source     @relation(fields: [sourceId], references: [id])
+  user        User       @relation(fields: [userId], references: [id])
+  progress    Progress[]
+  wordbook    WordbookItem[]
+  
+  @@map("lessons")
+}
+
+model Progress {
+  id        String        @id @default(cuid())
+  userId    String
+  lessonId  String
+  score     Int?
+  state     ProgressState @default(IN_PROGRESS)
+  detail    Json?         // quiz answers, speaking responses
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  
+  @@unique([userId, lessonId])
+  @@map("progress")
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  plan      Plan     @default(TRIAL)
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  stripeCustomerId String?
+  stripeSubscriptionId String?
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@map("subscriptions")
+}
+
+model WordbookItem {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  word      String
+  translation String @default("") // 사용자 입력 번역
+  context   String   // 자막에서 추출한 문맥
+  timestamp Float    // 동영상에서의 시간 (초)
+  source    String   @default("caption") // caption, manual
+  mastery   Int      @default(0) // 0-5 scale
+  isLearned Boolean  @default(false) // 학습 완료 여부
+  nextReview DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  
+  @@unique([userId, word, lessonId])
+  @@map("wordbook_items")
+}
+
+model Streak {
+  id        String   @id @default(cuid())
+  userId    String
+  count     Int      @default(0)
+  lastDate  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@unique([userId])
+  @@map("streaks")
+}
+
+model ReferralReward {
+  id             String   @id @default(cuid())
+  referrerId     String   // 추천한 사용자 ID
+  referredUserId String   // 추천받은 사용자 ID
+  type           RewardType
+  amount         Int      // 크레딧 양
+  description    String
+  status         RewardStatus @default(PENDING)
+  createdAt      DateTime @default(now())
+  completedAt    DateTime?
+  
+  // Relations
+  referrer       User     @relation("ReferrerRewards", fields: [referrerId], references: [id])
+  referred       User     @relation("ReferredRewards", fields: [referredUserId], references: [id])
+  
+  @@map("referral_rewards")
+}
+
+// Enums
+enum Role { 
+  STUDENT 
+  TEACHER 
+  ADMIN 
+}
+
+enum SourceType { 
+  YOUTUBE 
+  NEWS 
+  MP3 
+}
+
+enum Level { 
+  A2 
+  B1 
+  B2 
+  C1 
+}
+
+enum Purpose { 
+  CONVO 
+  IELTS 
+  TOEIC 
+  OPIC 
+}
+
+enum ProgressState { 
+  IN_PROGRESS 
+  DONE 
+}
+
+enum Plan { 
+  TRIAL 
+  PRO 
+  PREMIUM 
+}
+
+enum RewardType {
+  SIGNUP
+  SUBSCRIPTION
+  ACTIVITY
+}
+
+enum RewardStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}

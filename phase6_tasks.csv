@@ -1,0 +1,22 @@
+Name,Status
+영상 크기 조절 기능 구현 (UI 및 로직),Not started
+동영상 반복하기 기능 구현 (전체/구간 반복),Not started
+반복 구간 설정 UI 구현,Not started
+자막 단어 클릭 감지 기능 구현,Not started
+단어장 추가 API 및 데이터베이스 스키마 설계,Not started
+오늘의 단어장 섹션 UI 컴포넌트 개발,Not started
+단어장 관리 기능 (삭제/수정/정렬),Not started
+자막에서 단어장으로 이동 로직 구현,Not started
+Q&A 섹션 UI 컴포넌트 개발,Not started
+AI 기반 Q&A API 연동 (OpenAI GPT),Not started
+컨텍스트 기반 질문 답변 시스템 구현,Not started
+대본 다운로드 버튼 UI 구현,Not started
+대본 다운로드 API 구현 (PDF/TXT 형식),Not started
+대본 포맷팅 및 정리 기능,Not started
+언어 선택 버튼 디자인 스케치와 일치성 확인,Not started
+재생 컨트롤 UI 디자인 통일성 확인,Not started
+반응형 디자인 최적화 (모바일/태블릿),Not started
+접근성 개선 (키보드 네비게이션/스크린 리더),Not started
+
+
+
