@@ -18,7 +18,7 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 });
     }
@@ -48,7 +48,6 @@ export async function GET(
     }
 
     return NextResponse.json(vocabularyItem);
-
   } catch (error) {
     console.error("단어장 아이템 조회 오류:", error);
     return NextResponse.json(
@@ -65,7 +64,7 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 });
     }
@@ -104,7 +103,6 @@ export async function PUT(
     });
 
     return NextResponse.json(updatedItem);
-
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -129,7 +127,7 @@ export async function DELETE(
   try {
     const { id } = await params;
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 });
     }
@@ -154,7 +152,6 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: "단어가 삭제되었습니다" });
-
   } catch (error) {
     console.error("단어장 아이템 삭제 오류:", error);
     return NextResponse.json(
@@ -163,5 +160,3 @@ export async function DELETE(
     );
   }
 }
-
-

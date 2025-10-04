@@ -213,7 +213,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     };
 
     // Simulate POST request
-    const mockRequest = new Request(request.url, {
+    const mockRequest = new NextRequest(request.url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(testRequest),
