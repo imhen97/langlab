@@ -47,11 +47,13 @@ async function createBasicLesson({
   title,
   level,
   purpose,
+  session,
 }: {
   videoId: string;
   title: string;
   level: string;
   purpose: string;
+  session: any;
 }) {
   console.log("📝 Creating basic lesson without AI processing...");
 
@@ -808,6 +810,7 @@ export async function POST(req: Request) {
         title: basicVideoInfo.title,
         level: level || "B1",
         purpose: purpose || "CONVO",
+        session,
       });
 
       return NextResponse.json({
