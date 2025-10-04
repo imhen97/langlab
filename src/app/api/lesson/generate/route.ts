@@ -55,37 +55,34 @@ async function createBasicLesson({
 }) {
   console.log("📝 Creating basic lesson without AI processing...");
 
+  // Create source first
+  const source = await prisma.source.create({
+    data: {
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      type: "YOUTUBE",
+      title: title,
+      thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+      duration: 300, // 5 minutes default
+    },
+  });
+
   // Create lesson in database
   const lesson = await prisma.lesson.create({
     data: {
-      title,
-      description: `Basic lesson created from YouTube video ${videoId}`,
-      videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
-      thumbnailUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+      sourceId: source.id,
+      userId: session.user.id,
       level: level as any,
       purpose: purpose as any,
+      title,
+      description: `Basic lesson created from YouTube video ${videoId}`,
+      thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
       duration: 300, // 5 minutes default
-      source: "YOUTUBE",
-      // Basic transcript data
-      transcript: JSON.stringify([
-        {
-          start: 0,
-          end: 5,
-          text: "Welcome to this English lesson. Let's learn together!",
-        },
-        {
-          start: 5,
-          end: 10,
-          text: "This is a basic lesson created from a YouTube video.",
-        },
-        {
-          start: 10,
-          end: 15,
-          text: "You can practice your English listening skills here.",
-        },
-      ]),
-      // Basic vocabulary
-      vocabulary: JSON.stringify([
+      // Basic lesson data according to Prisma schema
+      summary: {
+        kr: "유튜브 비디오로부터 생성된 기본 영어 레슨입니다.",
+        en: "This is a basic English lesson created from a YouTube video."
+      },
+      vocab: [
         {
           word: "lesson",
           meaning: "수업, 레슨",
@@ -101,26 +98,41 @@ async function createBasicLesson({
           cefr: "A2",
           examples: ["Practice makes perfect.", "I need to practice more."],
         },
-      ]),
-      // Basic expressions
-      expressions: JSON.stringify([
+      ],
+      patterns: [
         {
           phrase: "Let's learn together",
           meaning: "함께 배워봅시다",
           type: "collocation",
           example: "Let's learn together and improve our English.",
         },
-      ]),
-      // Basic quiz
-      quiz: JSON.stringify([
+      ],
+      script: [
+        {
+          start: 0,
+          end: 5,
+          text: "Welcome to this English lesson. Let's learn together!",
+        },
+        {
+          start: 5,
+          end: 10,
+          text: "This is a basic lesson created from a YouTube video.",
+        },
+        {
+          start: 10,
+          end: 15,
+          text: "You can practice your English listening skills here.",
+        },
+      ],
+      quizzes: [
         {
           question: "What does 'lesson' mean?",
           options: ["수업", "책", "학교", "학생"],
           correct: 0,
           explanation: "'Lesson' means '수업' in Korean.",
         },
-      ]),
-      isActive: true,
+      ],
+      speaking: [],
     },
   });
 
