@@ -14,7 +14,7 @@ const updateVocabularySchema = z.object({
 // GET: 특정 단어장 아이템 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,9 +23,10 @@ export async function GET(
       return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 });
     }
 
+    const { id } = await params;
     const vocabularyItem = await prisma.wordbookItem.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
       include: {
@@ -60,7 +61,7 @@ export async function GET(
 // PUT: 단어장 아이템 업데이트
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -69,13 +70,14 @@ export async function PUT(
       return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const validatedData = updateVocabularySchema.parse(body);
 
     // 단어장 아이템 존재 및 소유권 확인
     const existingItem = await prisma.wordbookItem.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
     });
@@ -122,9 +124,10 @@ export async function PUT(
 // DELETE: 단어장 아이템 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
@@ -134,7 +137,7 @@ export async function DELETE(
     // 단어장 아이템 존재 및 소유권 확인
     const existingItem = await prisma.wordbookItem.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
     });
@@ -147,7 +150,7 @@ export async function DELETE(
     }
 
     await prisma.wordbookItem.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({ message: "단어가 삭제되었습니다" });
