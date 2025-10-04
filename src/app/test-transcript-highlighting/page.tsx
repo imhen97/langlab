@@ -1,16 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import TranscriptHighlighter, { TranscriptHighlighterDemo } from "@/components/TranscriptHighlighter";
+import {
+  TranscriptHighlighter,
+  TranscriptHighlighterDemo,
+} from "@/components/TranscriptHighlighter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { 
-  useTranscriptHighlighter, 
+import {
+  useTranscriptHighlighter,
   generateWordTimings,
-  type CaptionSegment 
+  type CaptionSegment,
 } from "@/hooks/useTranscriptHighlighter";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 
@@ -36,18 +39,19 @@ export default function TestTranscriptHighlightingPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Transcript Highlighter Test</h1>
         <p className="text-gray-600 mb-4">
-          Test real-time word-level highlighting with video transcripts. 
-          The highlighting should move smoothly from word to word as the video plays.
+          Test real-time word-level highlighting with video transcripts. The
+          highlighting should move smoothly from word to word as the video
+          plays.
         </p>
-        
+
         <div className="flex gap-2 mb-6">
-          <Button 
+          <Button
             onClick={() => setShowDemo(true)}
             variant={showDemo ? "default" : "outline"}
           >
             Demo Mode
           </Button>
-          <Button 
+          <Button
             onClick={() => setShowDemo(false)}
             variant={!showDemo ? "default" : "outline"}
           >
@@ -77,7 +81,7 @@ export default function TestTranscriptHighlightingPage() {
                     className="mt-1"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="transcript">Transcript JSON</Label>
                   <textarea
@@ -100,7 +104,11 @@ export default function TestTranscriptHighlightingPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Badge variant={parsedTranscript.length > 0 ? "default" : "secondary"}>
+                  <Badge
+                    variant={
+                      parsedTranscript.length > 0 ? "default" : "secondary"
+                    }
+                  >
                     {parsedTranscript.length} segments parsed
                   </Badge>
                   {parsedTranscript.length === 0 && customTranscript && (
@@ -134,32 +142,47 @@ export default function TestTranscriptHighlightingPage() {
               <h3 className="font-semibold mb-2">Common Issues & Solutions:</h3>
               <div className="space-y-2 text-sm">
                 <div>
-                  <strong>Issue:</strong> Highlighting stuck on first word<br/>
-                  <strong>Solution:</strong> Ensure video ref is properly connected and currentTime is updating
+                  <strong>Issue:</strong> Highlighting stuck on first word
+                  <br />
+                  <strong>Solution:</strong> Ensure video ref is properly
+                  connected and currentTime is updating
                 </div>
                 <div>
-                  <strong>Issue:</strong> Highlighting not smooth<br/>
-                  <strong>Solution:</strong> Check updateInterval (should be 50ms or less) and use requestAnimationFrame
+                  <strong>Issue:</strong> Highlighting not smooth
+                  <br />
+                  <strong>Solution:</strong> Check updateInterval (should be
+                  50ms or less) and use requestAnimationFrame
                 </div>
                 <div>
-                  <strong>Issue:</strong> Words not clickable<br/>
-                  <strong>Solution:</strong> Verify word timings are accurate and video element supports seeking
+                  <strong>Issue:</strong> Words not clickable
+                  <br />
+                  <strong>Solution:</strong> Verify word timings are accurate
+                  and video element supports seeking
                 </div>
                 <div>
-                  <strong>Issue:</strong> Performance issues<br/>
-                  <strong>Solution:</strong> Use React.memo, useMemo for expensive calculations, and throttle updates
+                  <strong>Issue:</strong> Performance issues
+                  <br />
+                  <strong>Solution:</strong> Use React.memo, useMemo for
+                  expensive calculations, and throttle updates
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">Key Implementation Details:</h3>
+              <h3 className="font-semibold mb-2">
+                Key Implementation Details:
+              </h3>
               <ul className="space-y-1 text-sm">
-                <li>• Uses <code>requestAnimationFrame</code> for smooth 60fps updates</li>
+                <li>
+                  • Uses <code>requestAnimationFrame</code> for smooth 60fps
+                  updates
+                </li>
                 <li>• Binary search for efficient word lookup (O(log n))</li>
                 <li>• Throttled updates to prevent excessive re-renders</li>
                 <li>• Event listeners for play/pause/seek to maintain sync</li>
-                <li>• Automatic word timing generation for segment-only data</li>
+                <li>
+                  • Automatic word timing generation for segment-only data
+                </li>
                 <li>• CSS transitions for smooth visual feedback</li>
               </ul>
             </div>
@@ -174,7 +197,7 @@ export default function TestTranscriptHighlightingPage() {
         </CardHeader>
         <CardContent>
           <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
-{`[
+            {`[
   {
     "start": 0.0,
     "end": 3.5,
@@ -256,18 +279,19 @@ function MockVideoPlayer() {
     return generateWordTimings(mockTranscript);
   }, []);
 
-  const { activeWordIndex, activeSegmentIndex, isPlaying: hookIsPlaying } = useTranscriptHighlighter(
-    videoRef, 
-    processedTranscript
-  );
+  const {
+    activeWordIndex,
+    activeSegmentIndex,
+    isPlaying: hookIsPlaying,
+  } = useTranscriptHighlighter(videoRef, processedTranscript);
 
   // Mock video playback
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (isPlaying && currentTime < duration) {
       interval = setInterval(() => {
-        setCurrentTime(prev => {
+        setCurrentTime((prev) => {
           const newTime = prev + 0.1;
           return newTime >= duration ? duration : newTime;
         });
@@ -295,13 +319,15 @@ function MockVideoPlayer() {
       ended: currentTime >= duration,
       addEventListener: () => {},
       removeEventListener: () => {},
-    }
+    },
   } as any;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mock Video Player (for testing without video file)</CardTitle>
+        <CardTitle>
+          Mock Video Player (for testing without video file)
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -319,7 +345,11 @@ function MockVideoPlayer() {
           {/* Controls */}
           <div className="flex items-center gap-2">
             <Button onClick={togglePlayPause} size="sm">
-              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              {isPlaying ? (
+                <Pause className="w-4 h-4" />
+              ) : (
+                <Play className="w-4 h-4" />
+              )}
             </Button>
             <input
               type="range"
@@ -334,8 +364,9 @@ function MockVideoPlayer() {
 
           {/* Status */}
           <div className="text-sm text-gray-600">
-            Active Word: {activeWordIndex >= 0 ? activeWordIndex + 1 : "None"} | 
-            Active Segment: {activeSegmentIndex >= 0 ? activeSegmentIndex + 1 : "None"}
+            Active Word: {activeWordIndex >= 0 ? activeWordIndex + 1 : "None"} |
+            Active Segment:{" "}
+            {activeSegmentIndex >= 0 ? activeSegmentIndex + 1 : "None"}
           </div>
         </div>
       </CardContent>
@@ -348,6 +379,3 @@ function formatTime(seconds: number): string {
   const remainingSeconds = Math.floor(seconds % 60);
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 }
-
-
-
