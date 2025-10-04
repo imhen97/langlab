@@ -28,6 +28,7 @@ interface YouTubePlayerProps {
   onPlay?: () => void;
   onPause?: () => void;
   onSeek?: (time: number) => void;
+  onEnd?: () => void;
   className?: string;
 }
 
@@ -151,6 +152,9 @@ const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
                   } else if (state === window.YT.PlayerState.PAUSED) {
                     setIsPlaying(false);
                     onPause?.();
+                  } else if (state === window.YT.PlayerState.ENDED) {
+                    setIsPlaying(false);
+                    onEnd?.();
                   }
                 },
               },
