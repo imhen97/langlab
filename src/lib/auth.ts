@@ -11,6 +11,7 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
   debug: process.env.NODE_ENV !== "production",
+  useSecureCookies: process.env.NODE_ENV === "production",
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -43,12 +44,11 @@ export const authOptions: NextAuthOptions = {
           }),
         ]
       : []),
-    ...(process.env.KAKAO_CLIENT_ID
+    ...(process.env.KAKAO_CLIENT_ID && process.env.KAKAO_CLIENT_SECRET
       ? [
           KakaoProvider({
             clientId: process.env.KAKAO_CLIENT_ID,
-            // Kakao 콘솔에서 "Client Secret 사용"이 OFF인 경우 빈 문자열 허용
-            clientSecret: process.env.KAKAO_CLIENT_SECRET || "",
+            clientSecret: process.env.KAKAO_CLIENT_SECRET,
             authorization: {
               params: {
                 scope: "profile_nickname account_email",
@@ -95,6 +95,13 @@ export const authOptions: NextAuthOptions = {
         token.uid = user.id;
       }
       return token;
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
     },
   },
   session: {

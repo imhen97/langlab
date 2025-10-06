@@ -34,19 +34,19 @@ export default function SignInPage() {
     }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     console.log("Google 로그인 버튼 클릭됨");
     try {
-      signIn("google", { callbackUrl: "/dashboard" });
+      await signIn("google", { callbackUrl: "/dashboard" });
     } catch (error) {
       console.error("Google 로그인 에러:", error);
     }
   };
 
-  const handleKakaoSignIn = () => {
+  const handleKakaoSignIn = async () => {
     console.log("Kakao 로그인 버튼 클릭됨");
     try {
-      signIn("kakao", { callbackUrl: "/dashboard" });
+      await signIn("kakao", { callbackUrl: "/dashboard" });
     } catch (error) {
       console.error("Kakao 로그인 에러:", error);
     }
@@ -89,6 +89,7 @@ export default function SignInPage() {
               <Button
                 onClick={handleGoogleSignIn}
                 variant="outline"
+                type="button"
                 className="w-full h-12 text-base"
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -115,6 +116,7 @@ export default function SignInPage() {
               <Button
                 onClick={handleKakaoSignIn}
                 variant="outline"
+                type="button"
                 className="w-full h-12 text-base bg-yellow-400 hover:bg-yellow-500 text-black border-yellow-400"
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
