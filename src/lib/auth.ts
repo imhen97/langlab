@@ -7,11 +7,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "./prisma";
 import { compare } from "bcryptjs";
 
-// Wrap PrismaAdapter with error handling
-const prismaAdapter = PrismaAdapter(prisma);
-
 export const authOptions: NextAuthConfig = {
-  adapter: prismaAdapter,
+  adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
   // Enable verbose debug logs in production when NEXTAUTH_DEBUG=true
   debug:
@@ -94,16 +91,19 @@ export const authOptions: NextAuthConfig = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      console.log("[next-auth][signIn] Starting signIn callback", { 
-        userId: user?.id, 
-        email: user?.email, 
-        provider: account?.provider 
+      console.log("[next-auth][signIn] Starting signIn callback", {
+        userId: user?.id,
+        email: user?.email,
+        provider: account?.provider,
       });
-      
+
       try {
         // Allow OAuth sign-ins
         if (account?.provider === "google" || account?.provider === "kakao") {
-          console.log("[next-auth][signIn] OAuth sign-in allowed for provider:", account.provider);
+          console.log(
+            "[next-auth][signIn] OAuth sign-in allowed for provider:",
+            account.provider
+          );
           return true;
         }
         // For credentials, user is already validated in authorize()
@@ -114,17 +114,11 @@ export const authOptions: NextAuthConfig = {
         return false;
       }
     },
-    session: async ({ session, token }) => {
-      if (session?.user && token?.sub) {
-        session.user.id = token.sub;
+    session: async ({ session, user }) => {
+      if (session?.user && user?.id) {
+        session.user.id = user.id;
       }
       return session;
-    },
-    jwt: async ({ user, token }) => {
-      if (user) {
-        token.uid = user.id;
-      }
-      return token;
     },
     async redirect({ url, baseUrl }) {
       // Allows relative callback URLs
@@ -152,7 +146,7 @@ export const authOptions: NextAuthConfig = {
     },
   },
   session: {
-    strategy: "jwt",
+    strategy: "database",
   },
   pages: {
     signIn: "/auth/signin",
