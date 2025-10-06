@@ -10,6 +10,3 @@ interface ProvidersProps {
 export default function SessionProvider({ children }: ProvidersProps) {
   return <NextAuthSessionProvider>{children}</NextAuthSessionProvider>;
 }
-
-
-

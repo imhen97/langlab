@@ -8,8 +8,3 @@ export const runtime = "nodejs";
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
-
-// Test endpoint to verify the route is working
-export async function OPTIONS() {
-  return new Response("OK", { status: 200 });
-}
