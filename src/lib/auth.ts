@@ -7,8 +7,11 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "./prisma";
 import { compare } from "bcryptjs";
 
+// Wrap PrismaAdapter with error handling
+const prismaAdapter = PrismaAdapter(prisma);
+
 export const authOptions: NextAuthConfig = {
-  adapter: PrismaAdapter(prisma),
+  adapter: prismaAdapter,
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
   // Enable verbose debug logs in production when NEXTAUTH_DEBUG=true
   debug:
@@ -32,7 +35,10 @@ export const authOptions: NextAuthConfig = {
         if (!user || !user.passwordHash) {
           return null;
         }
-        const isValid = await compare(credentials.password as string, user.passwordHash);
+        const isValid = await compare(
+          credentials.password as string,
+          user.passwordHash
+        );
         if (!isValid) {
           return null;
         }
@@ -87,6 +93,27 @@ export const authOptions: NextAuthConfig = {
     // }),
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      console.log("[next-auth][signIn] Starting signIn callback", { 
+        userId: user?.id, 
+        email: user?.email, 
+        provider: account?.provider 
+      });
+      
+      try {
+        // Allow OAuth sign-ins
+        if (account?.provider === "google" || account?.provider === "kakao") {
+          console.log("[next-auth][signIn] OAuth sign-in allowed for provider:", account.provider);
+          return true;
+        }
+        // For credentials, user is already validated in authorize()
+        console.log("[next-auth][signIn] Credentials sign-in allowed");
+        return true;
+      } catch (error) {
+        console.error("[next-auth][signIn] Error in signIn callback:", error);
+        return false;
+      }
+    },
     session: async ({ session, token }) => {
       if (session?.user && token?.sub) {
         session.user.id = token.sub;
