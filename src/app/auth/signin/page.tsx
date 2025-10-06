@@ -37,7 +37,9 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     console.log("Google 로그인 버튼 클릭됨");
     try {
-      await signIn("google", { callbackUrl: "/dashboard" });
+      console.log("signIn 함수 호출 시작");
+      const result = await signIn("google", { callbackUrl: "/dashboard" });
+      console.log("signIn 함수 결과:", result);
     } catch (error) {
       console.error("Google 로그인 에러:", error);
     }
@@ -189,12 +191,9 @@ export default function SignInPage() {
                     로그인 상태 유지
                   </label>
                 </div>
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-sm text-purple-600 hover:text-purple-700"
-                >
-                  비밀번호 찾기
-                </Link>
+                <span className="text-sm text-gray-500">
+                  비밀번호 찾기 (준비 중)
+                </span>
               </div>
 
               <Button
