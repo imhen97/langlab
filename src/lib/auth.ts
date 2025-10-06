@@ -8,7 +8,7 @@ import { prisma } from "./prisma";
 import { compare } from "bcryptjs";
 
 export const authOptions: NextAuthConfig = {
-  adapter: PrismaAdapter(prisma),
+  // adapter: PrismaAdapter(prisma), // Temporarily disabled for JWT strategy
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
   // Enable verbose debug logs in production when NEXTAUTH_DEBUG=true
   debug:
@@ -114,11 +114,17 @@ export const authOptions: NextAuthConfig = {
         return false;
       }
     },
-    session: async ({ session, user }) => {
-      if (session?.user && user?.id) {
-        session.user.id = user.id;
+    session: async ({ session, token }) => {
+      if (session?.user && token?.sub) {
+        session.user.id = token.sub;
       }
       return session;
+    },
+    jwt: async ({ user, token }) => {
+      if (user) {
+        token.uid = user.id;
+      }
+      return token;
     },
     async redirect({ url, baseUrl }) {
       // Allows relative callback URLs
@@ -146,7 +152,7 @@ export const authOptions: NextAuthConfig = {
     },
   },
   session: {
-    strategy: "database",
+    strategy: "jwt",
   },
   pages: {
     signIn: "/auth/signin",
