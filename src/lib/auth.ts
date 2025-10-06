@@ -27,10 +27,10 @@ export const authOptions: NextAuthConfig = {
         // For JWT strategy, we'll handle user validation separately
         // This is a simplified version - you may want to implement proper user lookup
         if (credentials.email && credentials.password) {
-          return { 
-            id: "1", 
-            name: "User", 
-            email: credentials.email 
+          return {
+            id: "1",
+            name: "User",
+            email: credentials.email,
           };
         }
         return null;
