@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import getServerSession from "next-auth";
+import { SessionWithUser } from "@/types/session";
 import { authOptions } from "@/lib/auth";
 import { z } from "zod";
 
@@ -160,7 +161,7 @@ function formatAsHTML(title: string, transcript: any): string {
 // POST: 대본 다운로드
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = (await getServerSession(authOptions)) as SessionWithUser;
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 });

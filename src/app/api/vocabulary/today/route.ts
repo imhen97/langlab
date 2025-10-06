@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import getServerSession from "next-auth";
+import { SessionWithUser } from "@/types/session";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // GET: 오늘의 단어장 조회 (오늘 추가된 단어들)
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = (await getServerSession(authOptions)) as SessionWithUser;
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 });

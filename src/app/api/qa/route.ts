@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import getServerSession from "next-auth";
+import { SessionWithUser } from "@/types/session";
 import { authOptions } from "@/lib/auth";
 import OpenAI from "openai";
 import { z } from "zod";
@@ -74,7 +75,7 @@ function findRelevantTimestamp(question: string, transcript: string): number {
 // POST: AI Q&A 질문 처리
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = (await getServerSession(authOptions)) as SessionWithUser;
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 });

@@ -1,4 +1,4 @@
-import { NextAuthOptions } from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import KakaoProvider from "next-auth/providers/kakao";
@@ -7,7 +7,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "./prisma";
 import { compare } from "bcryptjs";
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
   // Enable verbose debug logs in production when NEXTAUTH_DEBUG=true
@@ -22,17 +22,17 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials: any) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email: credentials.email as string },
         });
         if (!user || !user.passwordHash) {
           return null;
         }
-        const isValid = await compare(credentials.password, user.passwordHash);
+        const isValid = await compare(credentials.password as string, user.passwordHash);
         if (!isValid) {
           return null;
         }
@@ -109,18 +109,18 @@ export const authOptions: NextAuthOptions = {
   },
   // Surface NextAuth errors to Vercel logs for easier debugging
   logger: {
-    error(code, metadata) {
+    error(error: Error) {
       // eslint-disable-next-line no-console
-      console.error("[next-auth][error]", code, metadata ?? {});
+      console.error("[next-auth][error]", error);
     },
-    warn(code) {
+    warn(message: string) {
       // eslint-disable-next-line no-console
-      console.warn("[next-auth][warn]", code);
+      console.warn("[next-auth][warn]", message);
     },
-    debug(code, metadata) {
+    debug(message: string) {
       if (process.env.NEXTAUTH_DEBUG === "true") {
         // eslint-disable-next-line no-console
-        console.log("[next-auth][debug]", code, metadata ?? {});
+        console.log("[next-auth][debug]", message);
       }
     },
   },

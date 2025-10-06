@@ -7,6 +7,7 @@ import {
   postProcessTranscriptWithLLM,
 } from "@/lib/captions";
 import getServerSession from "next-auth";
+import { SessionWithUser } from "@/types/session";
 import { authOptions } from "@/lib/auth";
 
 // Types for enhanced vocabulary and phrase extraction
@@ -771,7 +772,7 @@ export async function POST(req: Request) {
   try {
     console.log("🚀 Starting lesson generation API...");
 
-    const session = await getServerSession(authOptions);
+    const session = (await getServerSession(authOptions)) as SessionWithUser;
     if (!session?.user?.id) {
       return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 });
     }
