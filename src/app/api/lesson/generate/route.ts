@@ -6,7 +6,7 @@ import {
   cleanTranscript,
   postProcessTranscriptWithLLM,
 } from "@/lib/captions";
-import { getServerSession } from "next-auth";
+import getServerSession from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 // Types for enhanced vocabulary and phrase extraction

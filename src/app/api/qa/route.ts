@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import getServerSession from "next-auth";
 import { authOptions } from "@/lib/auth";
 import OpenAI from "openai";
 import { z } from "zod";
