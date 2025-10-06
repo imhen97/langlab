@@ -35,11 +35,21 @@ export default function SignInPage() {
   };
 
   const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/dashboard" });
+    console.log("Google 로그인 버튼 클릭됨");
+    try {
+      signIn("google", { callbackUrl: "/dashboard" });
+    } catch (error) {
+      console.error("Google 로그인 에러:", error);
+    }
   };
 
   const handleKakaoSignIn = () => {
-    signIn("kakao", { callbackUrl: "/dashboard" });
+    console.log("Kakao 로그인 버튼 클릭됨");
+    try {
+      signIn("kakao", { callbackUrl: "/dashboard" });
+    } catch (error) {
+      console.error("Kakao 로그인 에러:", error);
+    }
   };
 
   return (
