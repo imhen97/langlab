@@ -10,7 +10,10 @@ import { compare } from "bcryptjs";
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
-  debug: process.env.NODE_ENV !== "production",
+  // Enable verbose debug logs in production when NEXTAUTH_DEBUG=true
+  debug:
+    process.env.NEXTAUTH_DEBUG === "true" ||
+    process.env.NODE_ENV !== "production",
   useSecureCookies: process.env.NODE_ENV === "production",
   providers: [
     CredentialsProvider({
@@ -102,6 +105,23 @@ export const authOptions: NextAuthOptions = {
       // Allows callback URLs on the same origin
       else if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
+    },
+  },
+  // Surface NextAuth errors to Vercel logs for easier debugging
+  logger: {
+    error(code, metadata) {
+      // eslint-disable-next-line no-console
+      console.error("[next-auth][error]", code, metadata ?? {});
+    },
+    warn(code) {
+      // eslint-disable-next-line no-console
+      console.warn("[next-auth][warn]", code);
+    },
+    debug(code, metadata) {
+      if (process.env.NEXTAUTH_DEBUG === "true") {
+        // eslint-disable-next-line no-console
+        console.log("[next-auth][debug]", code, metadata ?? {});
+      }
     },
   },
   session: {
