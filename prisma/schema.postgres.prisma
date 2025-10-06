@@ -1,0 +1,261 @@
+// Prisma schema for production (Postgres)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      Role     @default(STUDENT)
+  credits   Int      @default(3)
+  referredBy String?
+  lastLoginAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Auth
+  passwordHash String?
+  accounts     Account[]
+  sessions     Session[]
+
+  // Relations
+  lessons      Lesson[]
+  progress     Progress[]
+  subscription Subscription?
+  wordbook     WordbookItem[]
+  streaks      Streak[]
+
+  // Referral relations
+  referralRewardsReferrer ReferralReward[] @relation("ReferrerRewards")
+  referralRewardsReferred ReferralReward[] @relation("ReferredRewards")
+
+  @@map("users")
+}
+
+model Source {
+  id            String     @id @default(cuid())
+  url           String?
+  type          SourceType
+  title         String?
+  transcript    String?
+  duration      Int?
+  thumbnail     String?
+  createdAt     DateTime   @default(now())
+
+  // Relations
+  lessons       Lesson[]
+
+  @@map("sources")
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  sourceId    String
+  userId      String
+  level       Level
+  purpose     Purpose
+  title       String?
+  description String?
+  thumbnail   String?
+  duration    Int?
+  summary     Json
+  vocab       Json
+  patterns    Json
+  script      Json
+  quizzes     Json
+  speaking    Json
+  createdAt   DateTime @default(now())
+
+  // Relations
+  source      Source     @relation(fields: [sourceId], references: [id])
+  user        User       @relation(fields: [userId], references: [id])
+  progress    Progress[]
+  wordbook    WordbookItem[]
+
+  @@map("lessons")
+}
+
+model Progress {
+  id        String        @id @default(cuid())
+  userId    String
+  lessonId  String
+  score     Int?
+  state     ProgressState @default(IN_PROGRESS)
+  detail    Json?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, lessonId])
+  @@map("progress")
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  plan      Plan     @default(TRIAL)
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  stripeCustomerId String?
+  stripeSubscriptionId String?
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("subscriptions")
+}
+
+model WordbookItem {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  word      String
+  translation String @default("")
+  context   String
+  timestamp Float
+  source    String   @default("caption")
+  mastery   Int      @default(0)
+  isLearned Boolean  @default(false)
+  nextReview DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, word, lessonId])
+  @@map("wordbook_items")
+}
+
+model Streak {
+  id        String   @id @default(cuid())
+  userId    String
+  count     Int      @default(0)
+  lastDate  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId])
+  @@map("streaks")
+}
+
+model ReferralReward {
+  id             String   @id @default(cuid())
+  referrerId     String
+  referredUserId String
+  type           RewardType
+  amount         Int
+  description    String
+  status         RewardStatus @default(PENDING)
+  createdAt      DateTime @default(now())
+  completedAt    DateTime?
+
+  // Relations
+  referrer       User     @relation("ReferrerRewards", fields: [referrerId], references: [id])
+  referred       User     @relation("ReferredRewards", fields: [referredUserId], references: [id])
+
+  @@map("referral_rewards")
+}
+
+// Enums
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum SourceType {
+  YOUTUBE
+  NEWS
+  MP3
+}
+
+enum Level {
+  A2
+  B1
+  B2
+  C1
+}
+
+enum Purpose {
+  CONVO
+  IELTS
+  TOEIC
+  OPIC
+}
+
+enum ProgressState {
+  IN_PROGRESS
+  DONE
+}
+
+enum Plan {
+  TRIAL
+  PRO
+  PREMIUM
+}
+
+enum RewardType {
+  SIGNUP
+  SUBSCRIPTION
+  ACTIVITY
+}
+
+enum RewardStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+
