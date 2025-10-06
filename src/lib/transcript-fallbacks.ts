@@ -1,13 +1,13 @@
 /**
  * Advanced YouTube Transcript Extraction with Multiple Fallback Methods
- * 
+ *
  * This module provides a comprehensive solution for extracting YouTube transcripts
  * using multiple fallback methods to ensure reliability even when YouTube changes
  * its API or when different videos have varying caption availability.
- * 
+ *
  * Methods implemented:
  * 1. yt-dlp Integration (Preferred, Free)
- * 2. timedtext Endpoint Scraping (Backup Free Option)  
+ * 2. timedtext Endpoint Scraping (Backup Free Option)
  * 3. Whisper STT (When no captions exist)
  * 4. DumplingAI Transcript API (Stable Paid Option)
  */
@@ -49,14 +49,14 @@ export async function getTranscript(
   videoUrl: string,
   options: {
     language?: string;
-    preferMethod?: 'yt-dlp' | 'timedtext' | 'dumpling' | 'whisper';
+    preferMethod?: "yt-dlp" | "timedtext" | "dumpling" | "whisper";
     enableWhisper?: boolean;
     enableDumpling?: boolean;
     timeout?: number;
   } = {}
 ): Promise<TranscriptResult> {
   console.log(`🎬 Getting transcript for: ${videoUrl}`);
-  
+
   const {
     language = "en",
     preferMethod,
@@ -71,16 +71,19 @@ export async function getTranscript(
       success: false,
       segments: [],
       method: "none",
-      error: "Invalid YouTube URL"
+      error: "Invalid YouTube URL",
     };
   }
 
   // Define method priority based on preference
-  const methods = preferMethod 
-    ? [preferMethod, ...getOtherMethods(preferMethod, enableWhisper, enableDumpling)]
-    : ['yt-dlp', 'timedtext', 'dumpling', 'whisper'].filter(method => {
-        if (method === 'whisper' && !enableWhisper) return false;
-        if (method === 'dumpling' && !enableDumpling) return false;
+  const methods = preferMethod
+    ? [
+        preferMethod,
+        ...getOtherMethods(preferMethod, enableWhisper, enableDumpling),
+      ]
+    : ["yt-dlp", "timedtext", "dumpling", "whisper"].filter((method) => {
+        if (method === "whisper" && !enableWhisper) return false;
+        if (method === "dumpling" && !enableDumpling) return false;
         return true;
       });
 
@@ -88,12 +91,15 @@ export async function getTranscript(
   for (const method of methods) {
     try {
       console.log(`📡 Trying method: ${method}`);
-      
+
       const result = await Promise.race([
         executeMethod(method, videoUrl, videoId, language),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Method ${method} timeout`)), timeout)
-        )
+          setTimeout(
+            () => reject(new Error(`Method ${method} timeout`)),
+            timeout
+          )
+        ),
       ]);
 
       if (result.success && result.segments.length > 0) {
@@ -110,7 +116,7 @@ export async function getTranscript(
     success: false,
     segments: [],
     method: "none",
-    error: "All transcript extraction methods failed"
+    error: "All transcript extraction methods failed",
   };
 }
 
@@ -118,16 +124,16 @@ export async function getTranscript(
  * Get other methods excluding the preferred one
  */
 function getOtherMethods(
-  preferred: string, 
-  enableWhisper: boolean, 
+  preferred: string,
+  enableWhisper: boolean,
   enableDumpling: boolean
 ): string[] {
-  const allMethods = ['yt-dlp', 'timedtext', 'dumpling', 'whisper'];
+  const allMethods = ["yt-dlp", "timedtext", "dumpling", "whisper"];
   return allMethods
-    .filter(method => method !== preferred)
-    .filter(method => {
-      if (method === 'whisper' && !enableWhisper) return false;
-      if (method === 'dumpling' && !enableDumpling) return false;
+    .filter((method) => method !== preferred)
+    .filter((method) => {
+      if (method === "whisper" && !enableWhisper) return false;
+      if (method === "dumpling" && !enableDumpling) return false;
       return true;
     });
 }
@@ -142,13 +148,13 @@ async function executeMethod(
   language: string
 ): Promise<TranscriptResult> {
   switch (method) {
-    case 'yt-dlp':
+    case "yt-dlp":
       return await extractWithYtDlp(videoUrl, language);
-    case 'timedtext':
+    case "timedtext":
       return await extractWithTimedtext(videoId, language);
-    case 'dumpling':
+    case "dumpling":
       return await extractWithDumplingAI(videoUrl);
-    case 'whisper':
+    case "whisper":
       return await extractWithWhisper(videoUrl);
     default:
       throw new Error(`Unknown method: ${method}`);
@@ -176,22 +182,23 @@ async function extractWithYtDlp(
     const command = [
       `"${ytDlpPath}"`,
       `--write-sub`,
-      `--write-auto-sub`, 
+      `--write-auto-sub`,
       `--sub-lang ${language}`,
       `--sub-lang "${language}.*"`, // Include language variants
       `--skip-download`,
       `--output "${outputPath}"`,
-      `"${videoUrl}"`
-    ].join(' ');
+      `"${videoUrl}"`,
+    ].join(" ");
 
     console.log(`Running yt-dlp command: ${command}`);
     await execAsync(command);
 
     // Find generated subtitle files
     const files = await fs.promises.readdir(tempDir);
-    const subtitleFiles = files.filter(file => 
-      file.includes(`ytdlp_captions_`) && 
-      (file.endsWith('.vtt') || file.endsWith('.srt'))
+    const subtitleFiles = files.filter(
+      (file) =>
+        file.includes(`ytdlp_captions_`) &&
+        (file.endsWith(".vtt") || file.endsWith(".srt"))
     );
 
     if (subtitleFiles.length === 0) {
@@ -201,10 +208,10 @@ async function extractWithYtDlp(
     // Process the first available subtitle file
     const subtitleFile = subtitleFiles[0];
     const subtitlePath = path.join(tempDir, subtitleFile);
-    const content = await fs.promises.readFile(subtitlePath, 'utf-8');
+    const content = await fs.promises.readFile(subtitlePath, "utf-8");
 
     // Parse based on file extension
-    const segments = subtitleFile.endsWith('.vtt') 
+    const segments = subtitleFile.endsWith(".vtt")
       ? parseVTTContent(content)
       : parseSRTContent(content);
 
@@ -214,14 +221,14 @@ async function extractWithYtDlp(
     return {
       success: true,
       segments: cleanSegments(segments),
-      method: 'yt-dlp',
+      method: "yt-dlp",
       metadata: {
-        totalDuration: segments.length > 0 ? Math.max(...segments.map(s => s.end)) : 0,
+        totalDuration:
+          segments.length > 0 ? Math.max(...segments.map((s) => s.end)) : 0,
         segmentCount: segments.length,
-        language
-      }
+        language,
+      },
     };
-
   } catch (error) {
     // Clean up on error
     await fs.promises.unlink(outputPath).catch(() => {});
@@ -240,23 +247,27 @@ async function extractWithTimedtext(
     // Step 1: Fetch the YouTube watch page
     const watchPageUrl = `https://www.youtube.com/watch?v=${videoId}`;
     console.log(`📄 Fetching watch page: ${watchPageUrl}`);
-    
+
     const watchPageResponse = await fetch(watchPageUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      },
     });
 
     if (!watchPageResponse.ok) {
-      throw new Error(`Failed to fetch watch page: ${watchPageResponse.status}`);
+      throw new Error(
+        `Failed to fetch watch page: ${watchPageResponse.status}`
+      );
     }
 
     const htmlContent = await watchPageResponse.text();
 
     // Step 2: Search for timedtext URL in HTML
-    const timedtextRegex = /"captions":\s*\{[^}]*"playerCaptionsTracklistRenderer":\s*\{[^}]*"captionTracks":\s*\[([^\]]+)\]/;
+    const timedtextRegex =
+      /"captions":\s*\{[^}]*"playerCaptionsTracklistRenderer":\s*\{[^}]*"captionTracks":\s*\[([^\]]+)\]/;
     const match = htmlContent.match(timedtextRegex);
-    
+
     if (!match) {
       throw new Error("No captions found in watch page");
     }
@@ -266,9 +277,10 @@ async function extractWithTimedtext(
     const captionTracks = JSON.parse(captionTracksJson);
 
     // Find appropriate caption track
-    const captionTrack = captionTracks.find((track: any) => 
-      track.languageCode === language || 
-      track.languageCode.startsWith(language)
+    const captionTrack = captionTracks.find(
+      (track: any) =>
+        track.languageCode === language ||
+        track.languageCode.startsWith(language)
     );
 
     if (!captionTrack || !captionTrack.baseUrl) {
@@ -277,17 +289,18 @@ async function extractWithTimedtext(
 
     // Step 4: Decode escaped characters and fetch captions
     const timedtextUrl = captionTrack.baseUrl
-      .replace(/\\u0026/g, '&')
-      .replace(/\\u003d/g, '=')
-      .replace(/\\u003c/g, '<')
-      .replace(/\\u003e/g, '>');
+      .replace(/\\u0026/g, "&")
+      .replace(/\\u003d/g, "=")
+      .replace(/\\u003c/g, "<")
+      .replace(/\\u003e/g, ">");
 
     console.log(`📡 Fetching timedtext: ${timedtextUrl}`);
-    
+
     const captionsResponse = await fetch(timedtextUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      },
     });
 
     if (!captionsResponse.ok) {
@@ -300,14 +313,14 @@ async function extractWithTimedtext(
     return {
       success: true,
       segments: cleanSegments(segments),
-      method: 'timedtext',
+      method: "timedtext",
       metadata: {
-        totalDuration: segments.length > 0 ? Math.max(...segments.map(s => s.end)) : 0,
+        totalDuration:
+          segments.length > 0 ? Math.max(...segments.map((s) => s.end)) : 0,
         segmentCount: segments.length,
-        language
-      }
+        language,
+      },
     };
-
   } catch (error) {
     throw new Error(`Timedtext extraction failed: ${error}`);
   }
@@ -316,56 +329,67 @@ async function extractWithTimedtext(
 /**
  * Extract transcript using DumplingAI API (Paid service)
  */
-async function extractWithDumplingAI(videoUrl: string): Promise<TranscriptResult> {
+async function extractWithDumplingAI(
+  videoUrl: string
+): Promise<TranscriptResult> {
   const apiKey = process.env.DUMPLING_AI_API_KEY;
-  
+
   if (!apiKey) {
-    throw new Error("DumplingAI API key not configured. Set DUMPLING_AI_API_KEY environment variable.");
+    throw new Error(
+      "DumplingAI API key not configured. Set DUMPLING_AI_API_KEY environment variable."
+    );
   }
 
   try {
     console.log(`🤖 Using DumplingAI API for: ${videoUrl}`);
-    
-    const response = await fetch('https://app.dumplingai.com/api/v1/get-youtube-transcript', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        url: videoUrl,
-        language: 'en'
-      })
-    });
+
+    const response = await fetch(
+      "https://app.dumplingai.com/api/v1/get-youtube-transcript",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          url: videoUrl,
+          language: "en",
+        }),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(`DumplingAI API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `DumplingAI API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
-    
+
     if (!data.success || !data.transcript) {
       throw new Error("DumplingAI returned no transcript");
     }
 
     // Convert DumplingAI response to our format
-    const segments: TranscriptSegment[] = data.transcript.map((item: any, index: number) => ({
-      start: item.start || index * 5, // Estimate timing if not provided
-      end: item.end || (index + 1) * 5,
-      text: item.text || item
-    }));
+    const segments: TranscriptSegment[] = data.transcript.map(
+      (item: any, index: number) => ({
+        start: item.start || index * 5, // Estimate timing if not provided
+        end: item.end || (index + 1) * 5,
+        text: item.text || item,
+      })
+    );
 
     return {
       success: true,
       segments: cleanSegments(segments),
-      method: 'dumpling',
+      method: "dumpling",
       metadata: {
-        totalDuration: segments.length > 0 ? Math.max(...segments.map(s => s.end)) : 0,
+        totalDuration:
+          segments.length > 0 ? Math.max(...segments.map((s) => s.end)) : 0,
         segmentCount: segments.length,
-        language: 'en'
-      }
+        language: "en",
+      },
     };
-
   } catch (error) {
     throw new Error(`DumplingAI extraction failed: ${error}`);
   }
@@ -376,9 +400,11 @@ async function extractWithDumplingAI(videoUrl: string): Promise<TranscriptResult
  */
 async function extractWithWhisper(videoUrl: string): Promise<TranscriptResult> {
   const apiKey = process.env.OPENAI_API_KEY;
-  
+
   if (!apiKey) {
-    throw new Error("OpenAI API key not configured for Whisper. Set OPENAI_API_KEY environment variable.");
+    throw new Error(
+      "OpenAI API key not configured for Whisper. Set OPENAI_API_KEY environment variable."
+    );
   }
 
   const tempDir = os.tmpdir();
@@ -386,7 +412,7 @@ async function extractWithWhisper(videoUrl: string): Promise<TranscriptResult> {
 
   try {
     console.log(`🎤 Using Whisper STT for: ${videoUrl}`);
-    
+
     // Step 1: Extract audio using yt-dlp
     const ytDlpPath = await findYtDlpExecutable();
     if (!ytDlpPath) {
@@ -398,16 +424,16 @@ async function extractWithWhisper(videoUrl: string): Promise<TranscriptResult> {
       `-x --audio-format mp3`,
       `--audio-quality 0`,
       `--output "${audioPath}"`,
-      `"${videoUrl}"`
-    ].join(' ');
+      `"${videoUrl}"`,
+    ].join(" ");
 
     console.log(`🎵 Extracting audio: ${audioCommand}`);
     await execAsync(audioCommand);
 
     // Find the generated audio file
     const files = await fs.promises.readdir(tempDir);
-    const audioFile = files.find(file => 
-      file.startsWith(`whisper_audio_`) && file.endsWith('.mp3')
+    const audioFile = files.find(
+      (file) => file.startsWith(`whisper_audio_`) && file.endsWith(".mp3")
     );
 
     if (!audioFile) {
@@ -418,27 +444,33 @@ async function extractWithWhisper(videoUrl: string): Promise<TranscriptResult> {
 
     // Step 2: Transcribe with Whisper
     const openai = new OpenAI({ apiKey });
-    
+
     console.log(`🤖 Transcribing with Whisper...`);
     const audioBuffer = await fs.promises.readFile(actualAudioPath);
-    
+
     const transcription = await openai.audio.transcriptions.create({
-      file: new File([audioBuffer], 'audio.mp3', { type: 'audio/mp3' }),
-      model: 'whisper-1',
-      response_format: 'verbose_json',
-      timestamp_granularities: ['segment']
+      file: new File([new Uint8Array(audioBuffer)], "audio.mp3", {
+        type: "audio/mp3",
+      }),
+      model: "whisper-1",
+      response_format: "verbose_json",
+      timestamp_granularities: ["segment"],
     });
 
     // Convert Whisper segments to our format
-    const segments: TranscriptSegment[] = transcription.segments?.map(segment => ({
-      start: segment.start,
-      end: segment.end,
-      text: segment.text.trim()
-    })) || [{
-      start: 0,
-      end: 10,
-      text: transcription.text
-    }];
+    const segments: TranscriptSegment[] = transcription.segments?.map(
+      (segment) => ({
+        start: segment.start,
+        end: segment.end,
+        text: segment.text.trim(),
+      })
+    ) || [
+      {
+        start: 0,
+        end: 10,
+        text: transcription.text,
+      },
+    ];
 
     // Clean up audio file
     await fs.promises.unlink(actualAudioPath).catch(() => {});
@@ -446,14 +478,14 @@ async function extractWithWhisper(videoUrl: string): Promise<TranscriptResult> {
     return {
       success: true,
       segments: cleanSegments(segments),
-      method: 'whisper',
+      method: "whisper",
       metadata: {
-        totalDuration: segments.length > 0 ? Math.max(...segments.map(s => s.end)) : 0,
+        totalDuration:
+          segments.length > 0 ? Math.max(...segments.map((s) => s.end)) : 0,
         segmentCount: segments.length,
-        language: 'auto-detected'
-      }
+        language: "auto-detected",
+      },
     };
-
   } catch (error) {
     // Clean up on error
     await fs.promises.unlink(audioPath).catch(() => {});
@@ -479,18 +511,18 @@ function extractVideoId(url: string): string | null {
       return match[1];
     }
   }
-  
+
   return null;
 }
 
 async function findYtDlpExecutable(): Promise<string | null> {
   const possiblePaths = [
     "/usr/local/bin/yt-dlp",
-    "/opt/homebrew/bin/yt-dlp", 
+    "/opt/homebrew/bin/yt-dlp",
     "/Users/haenakim/Library/Python/3.9/bin/yt-dlp",
     "/Users/haenakim/Library/Python/3.10/bin/yt-dlp",
     "/Users/haenakim/Library/Python/3.11/bin/yt-dlp",
-    "yt-dlp" // Try system PATH
+    "yt-dlp", // Try system PATH
   ];
 
   for (const path of possiblePaths) {
@@ -501,7 +533,7 @@ async function findYtDlpExecutable(): Promise<string | null> {
       continue;
     }
   }
-  
+
   return null;
 }
 
@@ -517,7 +549,7 @@ function parseVTTContent(vttContent: string): TranscriptSegment[] {
     const timeMatch = line.match(
       /(\d{2}:\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}\.\d{3})/
     );
-    
+
     if (timeMatch) {
       const startTime = parseVTTTime(timeMatch[1]);
       const endTime = parseVTTTime(timeMatch[2]);
@@ -583,7 +615,7 @@ function parseSRTContent(srtContent: string): TranscriptSegment[] {
 
 function parseTimedtextXML(xmlContent: string): TranscriptSegment[] {
   const segments: TranscriptSegment[] = [];
-  
+
   // Parse XML and extract text elements with timing
   const textRegex = /<text start="([^"]+)"[^>]*>([^<]+)<\/text>/g;
   let match;
@@ -591,9 +623,9 @@ function parseTimedtextXML(xmlContent: string): TranscriptSegment[] {
   while ((match = textRegex.exec(xmlContent)) !== null) {
     const startTime = parseFloat(match[1]);
     const text = match[2]
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
       .replace(/&quot;/g, '"')
       .replace(/&#39;/g, "'")
       .trim();
@@ -602,7 +634,7 @@ function parseTimedtextXML(xmlContent: string): TranscriptSegment[] {
       segments.push({
         start: startTime,
         end: startTime + 3, // Estimate 3 second duration
-        text
+        text,
       });
     }
   }
@@ -618,14 +650,15 @@ function parseVTTTime(timeStr: string): number {
 
 function cleanSegments(segments: TranscriptSegment[]): TranscriptSegment[] {
   return segments
-    .map(segment => ({
+    .map((segment) => ({
       ...segment,
-      text: cleanText(segment.text)
+      text: cleanText(segment.text),
     }))
-    .filter(segment => 
-      segment.text && 
-      segment.text.trim().length > 2 &&
-      segment.end > segment.start
+    .filter(
+      (segment) =>
+        segment.text &&
+        segment.text.trim().length > 2 &&
+        segment.end > segment.start
     );
 }
 
@@ -655,7 +688,7 @@ export function segmentsToPlainText(
   const { includeTimestamps = false, separator = " ", maxLength } = options;
 
   let text = segments
-    .map(segment => {
+    .map((segment) => {
       if (includeTimestamps) {
         const startTime = formatTime(segment.start);
         return `[${startTime}] ${segment.text}`;
@@ -675,7 +708,7 @@ function formatTime(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = Math.floor(seconds % 60);
-  
+
   if (hours > 0) {
     return `${hours.toString().padStart(2, "0")}:${minutes
       .toString()
@@ -686,6 +719,3 @@ function formatTime(seconds: number): string {
       .padStart(2, "0")}`;
   }
 }
-
-
-

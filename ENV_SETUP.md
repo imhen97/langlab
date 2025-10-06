@@ -13,7 +13,7 @@ DATABASE_URL="file:./dev.db"
 ### NextAuth
 
 ```env
-NEXTAUTH_URL="http://localhost:3001"
+NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-nextauth-secret-key-here"
 ```
 
@@ -60,6 +60,24 @@ FIREBASE_PRIVATE_KEY="your-firebase-private-key"
 
 1. Create a `.env.local` file in the project root
 2. Add at least the required variables above
-3. Run `npm run dev` to start the development server
+3. Install deps with `pnpm install`
+4. Start the dev server yourself with `pnpm dev`
+
+## Vercel (Production) Setup
+
+1. Provision a Postgres database (Supabase/Neon/PlanetScale Postgres)
+2. In Vercel Project Settings → Environment Variables:
+   - `DATABASE_URL=postgres://...`
+   - `NEXTAUTH_URL=https://<your-domain>`
+   - `NEXTAUTH_SECRET=<random-secret>`
+   - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` (optional)
+   - `KAKAO_CLIENT_ID` / `KAKAO_CLIENT_SECRET` (optional)
+3. OAuth redirect URIs:
+   - `https://<your-domain>/api/auth/callback/google`
+   - `https://<your-domain>/api/auth/callback/kakao`
+4. Apply Prisma migrations to production DB:
+   - Locally with prod `DATABASE_URL`: `pnpm db:deploy`
+   - Or enable a Vercel build step to run `pnpm db:deploy`
+5. Push to the main branch to trigger Vercel redeploy
 
 The application will work with just the required variables, but additional features like OAuth login, payments, and AI features will require the optional variables.

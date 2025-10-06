@@ -7,7 +7,7 @@ import { Cue } from "@/hooks/useHighPerformanceSync";
 export default function TestEnhancedSync() {
   const [captionMode, setCaptionMode] = useState<"EN" | "KO" | "BOTH">("BOTH");
   const [debug, setDebug] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // Sample cue data for testing
   const sampleCues: Cue[] = [
@@ -220,6 +220,3 @@ export default function TestEnhancedSync() {
     </div>
   );
 }
-
-
-

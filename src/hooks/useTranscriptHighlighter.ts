@@ -31,14 +31,14 @@ interface UseTranscriptHighlighterReturn {
 
 /**
  * Custom hook for real-time word-level highlighting in video transcripts
- * 
+ *
  * @param videoRef - React ref to the video element
  * @param transcript - Array of caption segments with word timings
  * @param options - Configuration options
  * @returns Object with active indices and video state
  */
 export function useTranscriptHighlighter(
-  videoRef: React.RefObject<HTMLVideoElement>,
+  videoRef: React.RefObject<HTMLVideoElement | null>,
   transcript: CaptionSegment[],
   options: UseTranscriptHighlighterOptions = {}
 ): UseTranscriptHighlighterReturn {
@@ -54,71 +54,81 @@ export function useTranscriptHighlighter(
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const lastUpdateTimeRef = useRef<number>(0);
 
   // Flatten all words from all segments for easier indexing
-  const allWords = transcript.flatMap((segment, segmentIndex) =>
-    segment.words?.map((word, wordIndex) => ({
-      ...word,
-      segmentIndex,
-      wordIndex,
-      globalIndex: transcript.slice(0, segmentIndex).reduce(
-        (total, seg) => total + (seg.words?.length || 0), 
-        wordIndex
-      ),
-    })) || []
+  const allWords = transcript.flatMap(
+    (segment, segmentIndex) =>
+      segment.words?.map((word, wordIndex) => ({
+        ...word,
+        segmentIndex,
+        wordIndex,
+        globalIndex: transcript
+          .slice(0, segmentIndex)
+          .reduce((total, seg) => total + (seg.words?.length || 0), wordIndex),
+      })) || []
   );
 
   // Update highlighting based on current video time
-  const updateHighlighting = useCallback((videoTime: number) => {
-    if (!enabled || allWords.length === 0) {
-      setActiveWordIndex(-1);
-      setActiveSegmentIndex(-1);
-      setProgress(0);
-      return;
-    }
-
-    // Find the active word using binary search for efficiency
-    let left = 0;
-    let right = allWords.length - 1;
-    let activeWord = null;
-
-    while (left <= right) {
-      const mid = Math.floor((left + right) / 2);
-      const word = allWords[mid];
-
-      if (videoTime >= word.start - threshold && videoTime < word.end + threshold) {
-        activeWord = word;
-        break;
-      } else if (videoTime < word.start) {
-        right = mid - 1;
-      } else {
-        left = mid + 1;
+  const updateHighlighting = useCallback(
+    (videoTime: number) => {
+      if (!enabled || allWords.length === 0) {
+        setActiveWordIndex(-1);
+        setActiveSegmentIndex(-1);
+        setProgress(0);
+        return;
       }
-    }
 
-    if (activeWord) {
-      setActiveWordIndex(activeWord.globalIndex);
-      setActiveSegmentIndex(activeWord.segmentIndex);
-      
-      // Calculate progress through the current word (0-1)
-      const wordDuration = activeWord.end - activeWord.start;
-      const wordProgress = wordDuration > 0 
-        ? Math.max(0, Math.min(1, (videoTime - activeWord.start) / wordDuration))
-        : 0;
-      setProgress(wordProgress);
-    } else {
-      setActiveWordIndex(-1);
-      setActiveSegmentIndex(-1);
-      setProgress(0);
-    }
-  }, [allWords, enabled, threshold]);
+      // Find the active word using binary search for efficiency
+      let left = 0;
+      let right = allWords.length - 1;
+      let activeWord = null;
+
+      while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        const word = allWords[mid];
+
+        if (
+          videoTime >= word.start - threshold &&
+          videoTime < word.end + threshold
+        ) {
+          activeWord = word;
+          break;
+        } else if (videoTime < word.start) {
+          right = mid - 1;
+        } else {
+          left = mid + 1;
+        }
+      }
+
+      if (activeWord) {
+        setActiveWordIndex(activeWord.globalIndex);
+        setActiveSegmentIndex(activeWord.segmentIndex);
+
+        // Calculate progress through the current word (0-1)
+        const wordDuration = activeWord.end - activeWord.start;
+        const wordProgress =
+          wordDuration > 0
+            ? Math.max(
+                0,
+                Math.min(1, (videoTime - activeWord.start) / wordDuration)
+              )
+            : 0;
+        setProgress(wordProgress);
+      } else {
+        setActiveWordIndex(-1);
+        setActiveSegmentIndex(-1);
+        setProgress(0);
+      }
+    },
+    [allWords, enabled, threshold]
+  );
 
   // Main animation loop for smooth updates
   const animate = useCallback(() => {
     const now = performance.now();
-    
+
     // Throttle updates to specified interval for performance
     if (now - lastUpdateTimeRef.current >= updateInterval) {
       const video = videoRef.current;
@@ -155,21 +165,21 @@ export function useTranscriptHighlighter(
     };
 
     // Add event listeners
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('play', handlePlay);
-    video.addEventListener('pause', handlePause);
-    video.addEventListener('ended', handleEnded);
-    video.addEventListener('seeked', handleSeeked);
+    video.addEventListener("timeupdate", handleTimeUpdate);
+    video.addEventListener("play", handlePlay);
+    video.addEventListener("pause", handlePause);
+    video.addEventListener("ended", handleEnded);
+    video.addEventListener("seeked", handleSeeked);
 
     // Initial update
     handleTimeUpdate();
 
     return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('play', handlePlay);
-      video.removeEventListener('pause', handlePause);
-      video.removeEventListener('ended', handleEnded);
-      video.removeEventListener('seeked', handleSeeked);
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("play", handlePlay);
+      video.removeEventListener("pause", handlePause);
+      video.removeEventListener("ended", handleEnded);
+      video.removeEventListener("seeked", handleSeeked);
     };
   }, [videoRef, updateHighlighting, enabled]);
 
@@ -209,7 +219,7 @@ export function useTranscriptHighlighter(
 export function generateWordTimings(
   segments: CaptionSegment[]
 ): CaptionSegment[] {
-  return segments.map(segment => {
+  return segments.map((segment) => {
     if (segment.words && segment.words.length > 0) {
       return segment; // Already has word timings
     }
@@ -236,7 +246,7 @@ export function generateWordTimings(
  * Utility function to seek video to specific word
  */
 export function seekToWord(
-  videoRef: React.RefObject<HTMLVideoElement>,
+  videoRef: React.RefObject<HTMLVideoElement | null>,
   word: WordTiming
 ): void {
   const video = videoRef.current;
@@ -252,11 +262,8 @@ export function formatTime(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
   const milliseconds = Math.floor((seconds % 1) * 1000);
-  
+
   return `${minutes}:${remainingSeconds
     .toString()
     .padStart(2, "0")}.${milliseconds.toString().padStart(3, "0")}`;
 }
-
-
-

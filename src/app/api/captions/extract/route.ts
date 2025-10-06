@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const runtime = "nodejs";
 import {
   fetchCaptions,
   cleanTranscript,
@@ -67,11 +68,13 @@ export async function POST(
     let rawSegments: CaptionSegment[] = [];
 
     try {
+      const isVercel =
+        process.env.VERCEL === "1" || process.env.VERCEL === "true";
       rawSegments = await fetchCaptions(videoUrl, {
         preferLanguage: language,
-        useYtDlp: true,
+        useYtDlp: !isVercel,
       });
-      extractionMethod = "yt-dlp";
+      extractionMethod = isVercel ? "youtube-api/timedtext" : "yt-dlp";
     } catch (error) {
       console.warn("⚠️ yt-dlp failed, trying alternatives:", error);
 

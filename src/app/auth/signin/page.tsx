@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { BookOpen, Mail, Lock, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -21,18 +22,24 @@ export default function SignInPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Implement sign in logic
-    setTimeout(() => {
+    try {
+      await signIn("credentials", {
+        email,
+        password,
+        callbackUrl: "/dashboard",
+        redirect: true,
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleGoogleSignIn = () => {
-    // TODO: Implement Google sign in
+    signIn("google", { callbackUrl: "/dashboard" });
   };
 
   const handleKakaoSignIn = () => {
-    // TODO: Implement Kakao sign in
+    signIn("kakao", { callbackUrl: "/dashboard" });
   };
 
   return (

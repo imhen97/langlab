@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const runtime = "nodejs";
 import { z } from "zod";
 import { getVideoId, fetchCaptionList } from "@/lib/youtube";
 

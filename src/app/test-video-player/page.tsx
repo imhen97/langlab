@@ -445,7 +445,6 @@ export default function TestVideoPlayerPage() {
               persistKey="test-video-caption-mode"
               showControls={true}
               autoPlay={false}
-              muted={false}
               onVideoReady={handleVideoReady}
               onTimeUpdate={handleTimeUpdate}
               onWordClick={handleWordClick}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const runtime = "nodejs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import fs from "fs";
@@ -73,40 +74,46 @@ export async function POST(
       console.warn("⚠️ YouTube API failed:", error);
     }
 
-    // Step 3: Try yt-dlp for auto-generated captions (if available)
-    console.log("🔄 Step 3: Trying yt-dlp for auto-generated captions...");
-    try {
-      const transcript = await fetchTranscriptWithYtDlp(url);
-      if (transcript && transcript.length > 0) {
-        console.log("✅ yt-dlp success:", transcript.length, "segments");
-        const bilingualTranscript = convertToBilingualFormat(transcript);
-        return NextResponse.json({
-          success: true,
-          transcript: bilingualTranscript,
-          method: "yt-dlp auto-captions",
-        });
+    // Step 3: Try yt-dlp for auto-generated captions (if available and not on Vercel)
+    const isVercel =
+      process.env.VERCEL === "1" || process.env.VERCEL === "true";
+    if (!isVercel) {
+      console.log("🔄 Step 3: Trying yt-dlp for auto-generated captions...");
+      try {
+        const transcript = await fetchTranscriptWithYtDlp(url);
+        if (transcript && transcript.length > 0) {
+          console.log("✅ yt-dlp success:", transcript.length, "segments");
+          const bilingualTranscript = convertToBilingualFormat(transcript);
+          return NextResponse.json({
+            success: true,
+            transcript: bilingualTranscript,
+            method: "yt-dlp auto-captions",
+          });
+        }
+      } catch (error) {
+        console.warn("⚠️ yt-dlp failed (may not be installed):", error);
       }
-    } catch (error) {
-      console.warn("⚠️ yt-dlp failed (may not be installed):", error);
     }
 
     // Step 4: Try yt-dlp + Whisper for audio transcription (if available)
-    console.log(
-      "🎤 Step 4: Trying yt-dlp + Whisper for audio transcription..."
-    );
-    try {
-      const transcript = await fetchTranscriptWithWhisper(url);
-      if (transcript && transcript.length > 0) {
-        console.log("✅ Whisper success:", transcript.length, "segments");
-        const bilingualTranscript = convertToBilingualFormat(transcript);
-        return NextResponse.json({
-          success: true,
-          transcript: bilingualTranscript,
-          method: "yt-dlp + Whisper",
-        });
+    if (!isVercel) {
+      console.log(
+        "🎤 Step 4: Trying yt-dlp + Whisper for audio transcription..."
+      );
+      try {
+        const transcript = await fetchTranscriptWithWhisper(url);
+        if (transcript && transcript.length > 0) {
+          console.log("✅ Whisper success:", transcript.length, "segments");
+          const bilingualTranscript = convertToBilingualFormat(transcript);
+          return NextResponse.json({
+            success: true,
+            transcript: bilingualTranscript,
+            method: "yt-dlp + Whisper",
+          });
+        }
+      } catch (error) {
+        console.warn("⚠️ Whisper failed (may not be configured):", error);
       }
-    } catch (error) {
-      console.warn("⚠️ Whisper failed (may not be configured):", error);
     }
 
     // Step 5: Fallback to YouTube API-based content generation

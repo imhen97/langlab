@@ -56,7 +56,7 @@ export function Transcript({
 
   const transcriptRef = useRef<HTMLDivElement>(null);
   const activeCueRef = useRef<HTMLDivElement>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
 
   // Fetch available caption tracks
   const fetchTracks = useCallback(async () => {

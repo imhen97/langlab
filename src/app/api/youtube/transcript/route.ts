@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getYouTubeVideoWithTranscript, getVideoId } from "@/lib/youtube";
 
+export const runtime = "nodejs";
+
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
@@ -19,14 +21,6 @@ export async function POST(request: NextRequest) {
           details: error instanceof Error ? error.message : "Unknown error",
         },
         { status: 400 }
-      );
-    }
-
-    // YouTube API 키 확인
-    if (!process.env.YOUTUBE_API_KEY) {
-      return NextResponse.json(
-        { error: "YouTube API key not configured" },
-        { status: 500 }
       );
     }
 

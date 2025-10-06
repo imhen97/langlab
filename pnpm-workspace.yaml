@@ -1,0 +1,12 @@
+ignoredBuiltDependencies:
+  - '@firebase/util'
+  - '@tailwindcss/oxide'
+  - aws-sdk
+  - protobufjs
+  - sharp
+  - unrs-resolver
+
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - prisma

@@ -4,8 +4,16 @@ import React, { useRef, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CaptionToggle, CaptionToggleCompact, useCaptionMode } from "@/components/CaptionToggle";
-import { CaptionsRenderer, SideBySideCaptionsRenderer, CaptionSegment } from "@/components/CaptionsRenderer";
+import {
+  CaptionToggle,
+  CaptionToggleCompact,
+  useCaptionMode,
+} from "@/components/CaptionToggle";
+import {
+  CaptionsRenderer,
+  SideBySideCaptionsRenderer,
+  CaptionSegment,
+} from "@/components/CaptionsRenderer";
 import { useCaptionData } from "@/hooks/useCaptionMode";
 import { Play, Pause, RotateCcw, Volume2, VolumeX } from "lucide-react";
 
@@ -24,7 +32,7 @@ const sampleEnglishCaptions: CaptionSegment[] = [
       { text: "language", start: 2.3, end: 3.0 },
       { text: "learning", start: 3.0, end: 3.5 },
       { text: "platform.", start: 3.5, end: 4.0 },
-    ]
+    ],
   },
   {
     start: 4,
@@ -40,7 +48,7 @@ const sampleEnglishCaptions: CaptionSegment[] = [
       { text: "culture", start: 6.5, end: 7.0 },
       { text: "and", start: 7.0, end: 7.2 },
       { text: "traditions.", start: 7.2, end: 7.8 },
-    ]
+    ],
   },
   {
     start: 8,
@@ -56,8 +64,8 @@ const sampleEnglishCaptions: CaptionSegment[] = [
       { text: "greetings", start: 10.5, end: 11.2 },
       { text: "and", start: 11.2, end: 11.4 },
       { text: "phrases.", start: 11.4, end: 12.0 },
-    ]
-  }
+    ],
+  },
 ];
 
 const sampleKoreanCaptions: CaptionSegment[] = [
@@ -75,7 +83,7 @@ const sampleKoreanCaptions: CaptionSegment[] = [
       { text: "오신", start: 3.8, end: 4.2 },
       { text: "것을", start: 4.2, end: 4.5 },
       { text: "환영합니다.", start: 4.5, end: 5.0 },
-    ]
+    ],
   },
   {
     start: 4,
@@ -90,7 +98,7 @@ const sampleKoreanCaptions: CaptionSegment[] = [
       { text: "대해", start: 7.2, end: 7.6 },
       { text: "배울", start: 7.6, end: 8.0 },
       { text: "것입니다.", start: 8.0, end: 8.6 },
-    ]
+    ],
   },
   {
     start: 8,
@@ -102,8 +110,8 @@ const sampleKoreanCaptions: CaptionSegment[] = [
       { text: "인사말과", start: 9.5, end: 10.3 },
       { text: "표현부터", start: 10.3, end: 11.0 },
       { text: "시작해보겠습니다.", start: 11.0, end: 12.0 },
-    ]
-  }
+    ],
+  },
 ];
 
 export default function TestCaptionTogglePage() {
@@ -114,16 +122,12 @@ export default function TestCaptionTogglePage() {
   const [isMuted, setIsMuted] = useState(false);
   const [activeWordIndex, setActiveWordIndex] = useState(0);
   const [activeSegmentIndex, setActiveSegmentIndex] = useState(0);
-  const [renderMode, setRenderMode] = useState<"stacked" | "sidebyside">("stacked");
+  const [renderMode, setRenderMode] = useState<"stacked" | "sidebyside">(
+    "stacked"
+  );
 
   // Use caption mode hook with persistence
-  const {
-    mode,
-    setMode,
-    isEnglish,
-    isKorean,
-    isBoth,
-  } = useCaptionMode("en", "test-caption-mode");
+  const { mode, setMode, isEnglish, isKorean, isBoth } = useCaptionMode("en");
 
   // Use caption data hook
   const {
@@ -143,7 +147,7 @@ export default function TestCaptionTogglePage() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (isPlaying) {
-        setCurrentTime(prev => {
+        setCurrentTime((prev) => {
           const newTime = prev + 0.1;
           if (newTime >= 12) {
             setIsPlaying(false);
@@ -160,12 +164,12 @@ export default function TestCaptionTogglePage() {
   // Update active word and segment based on current time
   useEffect(() => {
     const allWords = [
-      ...sampleEnglishCaptions.flatMap(seg => seg.words || []),
-      ...sampleKoreanCaptions.flatMap(seg => seg.words || [])
+      ...sampleEnglishCaptions.flatMap((seg) => seg.words || []),
+      ...sampleKoreanCaptions.flatMap((seg) => seg.words || []),
     ];
 
     const activeWordIndex = allWords.findIndex(
-      word => currentTime >= word.start && currentTime < word.end
+      (word) => currentTime >= word.start && currentTime < word.end
     );
 
     if (activeWordIndex !== -1) {
@@ -175,7 +179,7 @@ export default function TestCaptionTogglePage() {
     // Find active segment
     const allSegments = [...sampleEnglishCaptions, ...sampleKoreanCaptions];
     const activeSegmentIndex = allSegments.findIndex(
-      segment => currentTime >= segment.start && currentTime < segment.end
+      (segment) => currentTime >= segment.start && currentTime < segment.end
     );
 
     if (activeSegmentIndex !== -1) {
@@ -198,7 +202,11 @@ export default function TestCaptionTogglePage() {
     setCurrentTime(time);
   };
 
-  const handleWordClick = (word: { text: string; start: number; end: number }) => {
+  const handleWordClick = (word: {
+    text: string;
+    start: number;
+    end: number;
+  }) => {
     handleSeek(word.start);
   };
 
@@ -210,9 +218,9 @@ export default function TestCaptionTogglePage() {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
     const milliseconds = Math.floor((seconds % 1) * 1000);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}.${milliseconds
+    return `${minutes}:${remainingSeconds
       .toString()
-      .padStart(3, "0")}`;
+      .padStart(2, "0")}.${milliseconds.toString().padStart(3, "0")}`;
   };
 
   return (
@@ -224,7 +232,8 @@ export default function TestCaptionTogglePage() {
             Caption Toggle System Test
           </h1>
           <p className="text-gray-600">
-            Test the dynamic caption switching between English, Korean, and both languages
+            Test the dynamic caption switching between English, Korean, and both
+            languages
           </p>
         </div>
 
@@ -238,21 +247,32 @@ export default function TestCaptionTogglePage() {
           <CardContent className="space-y-4">
             {/* Video Controls */}
             <div className="flex items-center gap-4 p-4 bg-gray-100 rounded-lg">
-              <Button onClick={handlePlayPause} variant={isPlaying ? "secondary" : "default"}>
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              <Button
+                onClick={handlePlayPause}
+                variant={isPlaying ? "secondary" : "default"}
+              >
+                {isPlaying ? (
+                  <Pause className="w-4 h-4" />
+                ) : (
+                  <Play className="w-4 h-4" />
+                )}
                 {isPlaying ? "Pause" : "Play"}
               </Button>
-              
+
               <Button onClick={handleReset} variant="outline">
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Reset
               </Button>
 
-              <Button 
-                onClick={() => setIsMuted(!isMuted)} 
+              <Button
+                onClick={() => setIsMuted(!isMuted)}
                 variant={isMuted ? "secondary" : "outline"}
               >
-                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
                 {isMuted ? "Unmute" : "Mute"}
               </Button>
 
@@ -269,9 +289,7 @@ export default function TestCaptionTogglePage() {
 
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">Time:</span>
-                <Badge variant="secondary">
-                  {formatTime(currentTime)}
-                </Badge>
+                <Badge variant="secondary">{formatTime(currentTime)}</Badge>
               </div>
             </div>
 
@@ -282,11 +300,15 @@ export default function TestCaptionTogglePage() {
                 onModeChange={setMode}
                 className="flex-1"
               />
-              
+
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">Layout:</span>
                 <Button
-                  onClick={() => setRenderMode(renderMode === "stacked" ? "sidebyside" : "stacked")}
+                  onClick={() =>
+                    setRenderMode(
+                      renderMode === "stacked" ? "sidebyside" : "stacked"
+                    )
+                  }
                   variant="outline"
                   size="sm"
                 >
@@ -298,10 +320,7 @@ export default function TestCaptionTogglePage() {
             {/* Compact Toggle Example */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Compact:</span>
-              <CaptionToggleCompact
-                mode={mode}
-                onModeChange={setMode}
-              />
+              <CaptionToggleCompact mode={mode} onModeChange={setMode} />
             </div>
           </CardContent>
         </Card>
@@ -319,24 +338,24 @@ export default function TestCaptionTogglePage() {
                 </div>
                 <div className="text-sm text-red-700">English Segments</div>
               </div>
-              
+
               <div className="text-center p-3 bg-blue-50 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">
                   {sampleKoreanCaptions.length}
                 </div>
                 <div className="text-sm text-blue-700">Korean Segments</div>
               </div>
-              
+
               <div className="text-center p-3 bg-green-50 rounded-lg">
                 <div className="text-2xl font-bold text-green-600">
-                  {sampleEnglishCaptions.flatMap(s => s.words || []).length}
+                  {sampleEnglishCaptions.flatMap((s) => s.words || []).length}
                 </div>
                 <div className="text-sm text-green-700">English Words</div>
               </div>
-              
+
               <div className="text-center p-3 bg-purple-50 rounded-lg">
                 <div className="text-2xl font-bold text-purple-600">
-                  {sampleKoreanCaptions.flatMap(s => s.words || []).length}
+                  {sampleKoreanCaptions.flatMap((s) => s.words || []).length}
                 </div>
                 <div className="text-sm text-purple-700">Korean Words</div>
               </div>
@@ -352,9 +371,7 @@ export default function TestCaptionTogglePage() {
               <Badge variant={mode === "both" ? "default" : "secondary"}>
                 {mode.toUpperCase()} Mode
               </Badge>
-              <Badge variant="outline">
-                Word {activeWordIndex + 1}
-              </Badge>
+              <Badge variant="outline">Word {activeWordIndex + 1}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -396,25 +413,71 @@ export default function TestCaptionTogglePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div className="space-y-2">
                 <h4 className="font-semibold">Current State</h4>
-                <div>Mode: <Badge variant="outline">{mode}</Badge></div>
-                <div>Playing: <Badge variant={isPlaying ? "default" : "secondary"}>{isPlaying ? "Yes" : "No"}</Badge></div>
-                <div>Time: <Badge variant="outline">{formatTime(currentTime)}</Badge></div>
-                <div>Active Word: <Badge variant="outline">{activeWordIndex}</Badge></div>
-                <div>Active Segment: <Badge variant="outline">{activeSegmentIndex}</Badge></div>
+                <div>
+                  Mode: <Badge variant="outline">{mode}</Badge>
+                </div>
+                <div>
+                  Playing:{" "}
+                  <Badge variant={isPlaying ? "default" : "secondary"}>
+                    {isPlaying ? "Yes" : "No"}
+                  </Badge>
+                </div>
+                <div>
+                  Time:{" "}
+                  <Badge variant="outline">{formatTime(currentTime)}</Badge>
+                </div>
+                <div>
+                  Active Word:{" "}
+                  <Badge variant="outline">{activeWordIndex}</Badge>
+                </div>
+                <div>
+                  Active Segment:{" "}
+                  <Badge variant="outline">{activeSegmentIndex}</Badge>
+                </div>
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="font-semibold">Caption Availability</h4>
-                <div>English: <Badge variant={hasEnglish ? "default" : "secondary"}>{hasEnglish ? "Available" : "None"}</Badge></div>
-                <div>Korean: <Badge variant={hasKorean ? "default" : "secondary"}>{hasKorean ? "Available" : "None"}</Badge></div>
-                <div>Both: <Badge variant={hasBoth ? "default" : "secondary"}>{hasBoth ? "Available" : "None"}</Badge></div>
+                <div>
+                  English:{" "}
+                  <Badge variant={hasEnglish ? "default" : "secondary"}>
+                    {hasEnglish ? "Available" : "None"}
+                  </Badge>
+                </div>
+                <div>
+                  Korean:{" "}
+                  <Badge variant={hasKorean ? "default" : "secondary"}>
+                    {hasKorean ? "Available" : "None"}
+                  </Badge>
+                </div>
+                <div>
+                  Both:{" "}
+                  <Badge variant={hasBoth ? "default" : "secondary"}>
+                    {hasBoth ? "Available" : "None"}
+                  </Badge>
+                </div>
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="font-semibold">Mode Flags</h4>
-                <div>Is English: <Badge variant={isEnglish ? "default" : "secondary"}>{isEnglish ? "Yes" : "No"}</Badge></div>
-                <div>Is Korean: <Badge variant={isKorean ? "default" : "secondary"}>{isKorean ? "Yes" : "No"}</Badge></div>
-                <div>Is Both: <Badge variant={isBoth ? "default" : "secondary"}>{isBoth ? "Yes" : "No"}</Badge></div>
+                <div>
+                  Is English:{" "}
+                  <Badge variant={isEnglish ? "default" : "secondary"}>
+                    {isEnglish ? "Yes" : "No"}
+                  </Badge>
+                </div>
+                <div>
+                  Is Korean:{" "}
+                  <Badge variant={isKorean ? "default" : "secondary"}>
+                    {isKorean ? "Yes" : "No"}
+                  </Badge>
+                </div>
+                <div>
+                  Is Both:{" "}
+                  <Badge variant={isBoth ? "default" : "secondary"}>
+                    {isBoth ? "Yes" : "No"}
+                  </Badge>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -423,6 +486,3 @@ export default function TestCaptionTogglePage() {
     </div>
   );
 }
-
-
-

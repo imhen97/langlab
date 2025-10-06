@@ -667,15 +667,15 @@ export async function getYouTubeVideoWithTranscript(videoId: string): Promise<{
   trackInfo?: CaptionTrack[];
 }> {
   try {
-    // Get video metadata
-    const videoInfo = await getYouTubeVideoInfo(videoId);
-
-    if (!videoInfo) {
-      return {
-        videoId,
-        hasCaptions: false,
-        error: "Video not found",
-      };
+    // Try to get video metadata (optional; proceed even if it fails)
+    let videoInfo: any | undefined = undefined;
+    try {
+      videoInfo = await getYouTubeVideoInfo(videoId);
+    } catch (infoError) {
+      console.warn(
+        "getYouTubeVideoInfo failed (continuing without metadata):",
+        infoError
+      );
     }
 
     // Try to get caption tracks

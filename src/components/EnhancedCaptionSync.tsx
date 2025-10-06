@@ -6,7 +6,7 @@ import { useHighPerformanceSync, Cue } from "@/hooks/useHighPerformanceSync";
 interface EnhancedCaptionSyncProps {
   cues: Cue[];
   playerRef: React.RefObject<any> | null;
-  videoRef: React.RefObject<HTMLVideoElement> | null;
+  videoRef: React.RefObject<HTMLVideoElement | null> | null;
   captionMode: "EN" | "KO" | "BOTH";
   className?: string;
   maxHeight?: string;
@@ -174,6 +174,3 @@ export function EnhancedCaptionSync({
     </div>
   );
 }
-
-
-

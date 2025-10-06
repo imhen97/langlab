@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TranscriptHighlighter,
   TranscriptHighlighterDemo,
@@ -237,7 +237,7 @@ export default function TestTranscriptHighlightingPage() {
  * Standalone Video Player Component for testing without external video
  */
 function MockVideoPlayer() {
-  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const videoRef = React.useRef<HTMLVideoElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(15); // 15 seconds mock duration

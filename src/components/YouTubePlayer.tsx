@@ -49,6 +49,7 @@ const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
       onPlay,
       onPause,
       onSeek,
+      onEnd,
       className = "",
     },
     ref

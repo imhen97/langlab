@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { BookOpen, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -25,18 +26,37 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Implement sign up logic
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+      if (!res.ok) {
+        setIsLoading(false);
+        return;
+      }
+      await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        callbackUrl: "/dashboard",
+        redirect: true,
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleGoogleSignUp = () => {
-    // TODO: Implement Google sign up
+    signIn("google", { callbackUrl: "/dashboard" });
   };
 
   const handleKakaoSignUp = () => {
-    // TODO: Implement Kakao sign up
+    signIn("kakao", { callbackUrl: "/dashboard" });
   };
 
   return (

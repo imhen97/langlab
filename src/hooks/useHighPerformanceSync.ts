@@ -18,6 +18,7 @@ interface PlayerRef {
   getCurrentTime?: () => number;
   getPlaybackRate?: () => number;
   seekTo?: (time: number, allowSeekAhead?: boolean) => void;
+  getPlayerState?: () => number;
 }
 
 interface VideoElement {
@@ -33,7 +34,7 @@ interface VideoElement {
 export function useHighPerformanceSync(
   cues: Cue[],
   playerRef: React.RefObject<PlayerRef> | null,
-  videoRef: React.RefObject<HTMLVideoElement> | null,
+  videoRef: React.RefObject<HTMLVideoElement | null> | null,
   options: UseHighPerformanceSyncOptions = {}
 ) {
   const { debug = false, syncTolerance = 0.1, resyncInterval = 10 } = options;
